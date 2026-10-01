@@ -9,16 +9,16 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.centsational.domain.model.Transaction
+import androidx.compose.ui.Modifier
 
 @Composable
 fun TransactionsScreen(
+    modifier: Modifier = Modifier,
     viewModel: TransactionsViewModel = hiltViewModel()
 ) {
-    // Observa o StateFlow da ViewModel de forma segura para o ciclo de vida
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
 
-    // Exemplo simples de UI
-    LazyColumn {
+    LazyColumn(modifier = modifier) {
         item {
             Button(onClick = { viewModel.addTestExpense() }) {
                 Text("Adicionar Café (Teste)")
