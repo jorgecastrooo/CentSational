@@ -39,29 +39,10 @@ class TransactionsViewModel @Inject constructor(private val repo: TransactionRep
             initialValue = 0L
         )
 
-    fun addTestExpense() {
+    fun addTransaction(note: String, amountCents: Long, type: TransactionType)
+    {
         viewModelScope.launch {
-            repo.add(
-                Transaction(
-                    amountCents = 120,
-                    type = TransactionType.EXPENSE,
-                    date = LocalDate.now(),
-                    note = "Café"
-                )
-            )
-        }
-    }
-
-    fun addTestIncome(){
-        viewModelScope.launch {
-            repo.add(
-                Transaction(
-                    amountCents = 100000,
-                    type = TransactionType.INCOME,
-                    date = LocalDate.now(),
-                    note = "Salário"
-                )
-            )
+            repo.add(Transaction(note = note, amountCents = amountCents, type = type, date = LocalDate.now()))
         }
     }
 

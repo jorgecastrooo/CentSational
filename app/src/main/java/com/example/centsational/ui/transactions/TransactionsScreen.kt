@@ -1,63 +1,102 @@
 package com.example.centsational.ui.transactions
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.Modifier
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import com.example.centsational.domain.model.TransactionType
+import com.example.centsational.ui.theme.green
+import com.example.centsational.ui.theme.grey
+import com.example.centsational.ui.theme.red
+import java.math.RoundingMode
 import java.text.NumberFormat
 import java.util.Locale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.ui.Alignment
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsViewModel = hiltViewModel())
 {
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val balanceCents by viewModel.balanceCents.collectAsStateWithLifecycle()
 
-    LazyColumn(modifier = modifier)
-    {
+    var note by remember { mutableStateOf("") }
+    var amountText by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf(TransactionType.EXPENSE) }
+
+    val amountCents: Long? = amountText.replace(',', '.').toBigDecimalOrNull() ?.setScale(2, RoundingMode.HALF_UP) ?.movePointRight(2) ?.toLong()
+
+    LazyColumn(modifier = modifier) {
         item {
-            val color_amount = when {
-                balanceCents < 0 -> Color(0xFFE53935)  // Vermelho
-                balanceCents > 0 -> Color(0xFF43A047)  // Verde
-                else -> Color(0xFF757575)              // Cinzento
+            val balanceColor = when {
+                balanceCents < 0 -> red
+                balanceCents > 0 -> green
+                else -> grey
             }
 
-            Text(text = "Saldo: ${formatCents(balanceCents)}", color = color_amount)
+            Column {
+                Text(text = "Saldo: ${formatCents(balanceCents)}", color = balanceColor)
 
-            Row {
-                Button(onClick = { viewModel.addTestExpense() }) {
-                    Text("Café")
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    SegmentedButton(selected = type == TransactionType.EXPENSE, onClick = { type = TransactionType.EXPENSE }, shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2))
+                    {
+                        Text("Despesa")
+                    }
+
+                    SegmentedButton(selected = type == TransactionType.INCOME, onClick = { type = TransactionType.INCOME }, shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2))
+                    {
+                        Text("Receita")
+                    }
                 }
-                Button(onClick = { viewModel.addTestIncome() }) {
-                    Text("Salário")
+
+                OutlinedTextField(value = note, onValueChange = { note = it }, label = { Text("Nota") })
+
+                OutlinedTextField(value = amountText, onValueChange = { amountText = it }, label = { Text("Valor (€)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+
+                Button(enabled = amountCents != null && amountCents > 0,
+                    onClick = {
+                        viewModel.addTransaction(note, amountCents!!, type)
+                        note = ""
+                        amountText = ""
+                    }
+                ) {
+                    Text("Guardar")
                 }
             }
         }
 
         items(transactions) { transaction ->
-
             val isExpense = transaction.type == TransactionType.EXPENSE
-            val color = if (isExpense) Color(0xFFE53935) else Color(0xFF43A047)
+            val color = if (isExpense) red else green
             val sign = if (isExpense) "-" else "+"
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
             {
                 Text(text = "${transaction.note}: $sign${formatCents(transaction.amountCents)}", color = color)
+
                 IconButton(onClick = { viewModel.deleteTransaction(transaction) })
                 {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Apagar")
