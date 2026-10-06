@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlinx.coroutines.flow.map
+
 
 @HiltViewModel
 class TransactionsViewModel @Inject constructor(private val repo: TransactionRepository) : ViewModel()
@@ -30,7 +30,8 @@ class TransactionsViewModel @Inject constructor(private val repo: TransactionRep
                 if(it.type == TransactionType.EXPENSE)
                     -it.amountCents
                 else
-                    it.amountCents.toLong() }
+                    it.amountCents
+            }
         }
         .stateIn(
             scope = viewModelScope,
