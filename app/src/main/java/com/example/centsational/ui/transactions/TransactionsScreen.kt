@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun TransactionsScreen(
@@ -29,7 +31,7 @@ fun TransactionsScreen(
             }
         }
         items(transactions) { transaction ->
-            Text(text = "${transaction.note}: ${transaction.amountCents / 100.0}€")
+            Text(text = "${transaction.note}: ${formatCents(transaction.amountCents)}")
             IconButton(onClick = { viewModel.deleteTransaction(transaction) }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -38,4 +40,9 @@ fun TransactionsScreen(
             }
         }
     }
+}
+
+private fun formatCents(cents: Long): String
+{
+    return NumberFormat.getCurrencyInstance(Locale("pt", "PT")).format(cents / 100.0)
 }
