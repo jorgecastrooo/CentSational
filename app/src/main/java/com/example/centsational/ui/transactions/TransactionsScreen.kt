@@ -27,10 +27,19 @@ import androidx.compose.ui.Alignment
 fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsViewModel = hiltViewModel())
 {
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
+    val balanceCents by viewModel.balanceCents.collectAsStateWithLifecycle()
 
     LazyColumn(modifier = modifier)
     {
         item {
+            val color_amount = when {
+                balanceCents < 0 -> Color(0xFFE53935)  // Vermelho
+                balanceCents > 0 -> Color(0xFF43A047)  // Verde
+                else -> Color(0xFF757575)              // Cinzento
+            }
+
+            Text(text = "Saldo: ${formatCents(balanceCents)}", color = color_amount)
+
             Row {
                 Button(onClick = { viewModel.addTestExpense() }) {
                     Text("Café")
@@ -42,20 +51,16 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
         }
 
         items(transactions) { transaction ->
+
             val isExpense = transaction.type == TransactionType.EXPENSE
             val color = if (isExpense) Color(0xFFE53935) else Color(0xFF43A047)
             val sign = if (isExpense) "-" else "+"
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${transaction.note}: $sign${formatCents(transaction.amountCents)}",
-                    color = color
-                )
-                IconButton(onClick = { viewModel.deleteTransaction(transaction) }) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+            {
+                Text(text = "${transaction.note}: $sign${formatCents(transaction.amountCents)}", color = color)
+                IconButton(onClick = { viewModel.deleteTransaction(transaction) })
+                {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Apagar")
                 }
             }

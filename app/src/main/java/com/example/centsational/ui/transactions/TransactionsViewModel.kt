@@ -8,21 +8,35 @@ import com.example.centsational.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
 
 @HiltViewModel
-class TransactionsViewModel @Inject constructor(
-    private val repo: TransactionRepository
-) : ViewModel() {
-
+class TransactionsViewModel @Inject constructor(private val repo: TransactionRepository) : ViewModel()
+{
     val transactions: StateFlow<List<Transaction>> = repo.observeAll().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
     )
+
+    val balanceCents: StateFlow<Long> = transactions.map {
+        list ->
+            list.sumOf {
+                if(it.type == TransactionType.EXPENSE)
+                    -it.amountCents
+                else
+                    it.amountCents.toLong() }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0L
+        )
 
     fun addTestExpense() {
         viewModelScope.launch {
@@ -55,4 +69,5 @@ class TransactionsViewModel @Inject constructor(
             repo.delete(transaction)
         }
     }
+
 }
