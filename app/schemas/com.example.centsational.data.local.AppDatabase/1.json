@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "60472a4b091f69032572a399cd091857",
+    "identityHash": "d24c74e827621672c2c57759708dbc67",
     "entities": [
       {
         "tableName": "transactions",
@@ -57,26 +57,7 @@
             "id"
           ]
         },
-        "indices": [
-          {
-            "name": "index_transactions_categoryId",
-            "unique": false,
-            "columnNames": [
-              "categoryId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_categoryId` ON `${TABLE_NAME}` (`categoryId`)"
-          },
-          {
-            "name": "index_transactions_dateEpochDay",
-            "unique": false,
-            "columnNames": [
-              "dateEpochDay"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_dateEpochDay` ON `${TABLE_NAME}` (`dateEpochDay`)"
-          }
-        ],
+        "indices": [],
         "foreignKeys": [
           {
             "table": "categories",
@@ -133,7 +114,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '60472a4b091f69032572a399cd091857')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd24c74e827621672c2c57759708dbc67')"
     ]
   }
 }

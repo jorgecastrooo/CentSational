@@ -18,21 +18,12 @@ class TransactionsViewModel @Inject constructor(
     private val repo: TransactionRepository
 ) : ViewModel() {
 
-    /**
-     * Converts the Flow from the repository into a StateFlow that the UI can observe.
-     * WhileSubscribed(5_000) keeps the upstream flow active for 5 seconds after the
-     * last collector disappears, handling configuration changes (like rotation) efficiently.
-     */
-    val transactions: StateFlow<List<Transaction>> = repo.observeAll()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
+    val transactions: StateFlow<List<Transaction>> = repo.observeAll().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList()
+    )
 
-    /**
-     * Launches a coroutine in the viewModelScope to add a dummy expense.
-     */
     fun addTestExpense() {
         viewModelScope.launch {
             repo.add(
@@ -43,6 +34,12 @@ class TransactionsViewModel @Inject constructor(
                     note = "Café"
                 )
             )
+        }
+    }
+
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repo.delete(transaction)
         }
     }
 }

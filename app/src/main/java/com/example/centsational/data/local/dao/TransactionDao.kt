@@ -16,7 +16,7 @@ interface TransactionDao{
     @Query("SELECT * FROM transactions WHERE dateEpochDay BETWEEN :from AND :to ORDER BY dateEpochDay DESC, id DESC")
     fun observeBetween(from: Long, to: Long): Flow<List<TransactionEntity>>
 
-    @Insert
+    @Insert()
     suspend fun insert(entity: TransactionEntity): Long
     
     @Update

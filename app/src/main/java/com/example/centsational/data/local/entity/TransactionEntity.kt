@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(entity = CategoryEntity::class,parentColumns = ["id"], childColumns = ["categoryId"], onDelete = ForeignKey.SET_NULL)
     ],
-    indices = [Index("categoryId"), Index("dateEpochDay")]
+
 )
 
 data class TransactionEntity(

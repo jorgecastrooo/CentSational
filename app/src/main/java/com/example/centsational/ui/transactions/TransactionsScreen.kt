@@ -10,6 +10,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.centsational.domain.model.Transaction
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun TransactionsScreen(
@@ -26,6 +30,12 @@ fun TransactionsScreen(
         }
         items(transactions) { transaction ->
             Text(text = "${transaction.note}: ${transaction.amountCents / 100.0}€")
+            IconButton(onClick = { viewModel.deleteTransaction(transaction) }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Apagar"
+                )
+            }
         }
     }
 }
