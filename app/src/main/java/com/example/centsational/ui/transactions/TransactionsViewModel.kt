@@ -37,6 +37,19 @@ class TransactionsViewModel @Inject constructor(
         }
     }
 
+    fun addTestIncome(){
+        viewModelScope.launch {
+            repo.add(
+                Transaction(
+                    amountCents = 100000,
+                    type = TransactionType.INCOME,
+                    date = LocalDate.now(),
+                    note = "Salário"
+                )
+            )
+        }
+    }
+
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
             repo.delete(transaction)
