@@ -2,8 +2,10 @@ package com.example.centsational.ui.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.centsational.domain.model.Category
 import com.example.centsational.domain.model.Transaction
 import com.example.centsational.domain.model.TransactionType
+import com.example.centsational.domain.repository.CategoryRepository
 import com.example.centsational.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,9 +18,15 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class TransactionsViewModel @Inject constructor(private val repo: TransactionRepository) : ViewModel()
+class TransactionsViewModel @Inject constructor(private val repo: TransactionRepository, categoryRepo: CategoryRepository) : ViewModel()
 {
     val transactions: StateFlow<List<Transaction>> = repo.observeAll().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList()
+    )
+
+    val categories: StateFlow<List<Category>> = categoryRepo.observeAll().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
@@ -39,10 +47,10 @@ class TransactionsViewModel @Inject constructor(private val repo: TransactionRep
             initialValue = 0L
         )
 
-    fun addTransaction(note: String, amountCents: Long, type: TransactionType)
+    fun addTransaction(note: String, amountCents: Long, type: TransactionType, categoryId: Long?)
     {
         viewModelScope.launch {
-            repo.add(Transaction(note = note, amountCents = amountCents, type = type, date = LocalDate.now()))
+            repo.add(Transaction(note = note, amountCents = amountCents, type = type, categoryId = categoryId ,date = LocalDate.now()))
         }
     }
 
