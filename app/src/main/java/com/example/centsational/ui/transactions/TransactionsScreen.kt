@@ -1,9 +1,8 @@
 package com.example.centsational.ui.transactions
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,11 +17,13 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,20 +32,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.centsational.domain.model.Transaction
 import com.example.centsational.domain.model.TransactionType
 import com.example.centsational.ui.theme.green
 import com.example.centsational.ui.theme.grey
 import com.example.centsational.ui.theme.red
+import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.NumberFormat
 import java.util.Locale
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsViewModel = hiltViewModel())
 {
@@ -55,11 +56,21 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
     var note by remember { mutableStateOf("") }
     var amountText by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(TransactionType.EXPENSE) }
-    var selectedCategoryId  by remember { mutableStateOf<Long?>(null) }
+    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
     var expanded by remember { mutableStateOf(false) }
-    val selectedName = categories.find { it.id == selectedCategoryId }?.name ?: ""
+    var editing by remember { mutableStateOf<Transaction?>(null) }
 
+    val selectedName = categories.find { it.id == selectedCategoryId }?.name ?: ""
     val amountCents: Long? = amountText.replace(',', '.').toBigDecimalOrNull() ?.setScale(2, RoundingMode.HALF_UP) ?.movePointRight(2) ?.toLong()
+    val canSave = amountCents != null && amountCents > 0 && note.isNotBlank() && selectedCategoryId != null
+
+    val resetForm = {
+        editing = null
+        note = ""
+        amountText = ""
+        type = TransactionType.EXPENSE
+        selectedCategoryId = null
+    }
 
     LazyColumn(modifier = modifier) {
         item {
@@ -73,13 +84,19 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
                 Text(text = "Saldo: ${formatCents(balanceCents)}", color = balanceColor)
 
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    SegmentedButton(selected = type == TransactionType.EXPENSE, onClick = { type = TransactionType.EXPENSE }, shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2))
-                    {
+                    SegmentedButton(
+                        selected = type == TransactionType.EXPENSE,
+                        onClick = { type = TransactionType.EXPENSE },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                    ) {
                         Text("Despesa")
                     }
 
-                    SegmentedButton(selected = type == TransactionType.INCOME, onClick = { type = TransactionType.INCOME }, shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2))
-                    {
+                    SegmentedButton(
+                        selected = type == TransactionType.INCOME,
+                        onClick = { type = TransactionType.INCOME },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                    ) {
                         Text("Receita")
                     }
                 }
@@ -88,27 +105,17 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
 
                 OutlinedTextField(value = amountText, onValueChange = { amountText = it }, label = { Text("Valor (€)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
 
-
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it })
                 {
-                    OutlinedTextField(
-                        value = selectedName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Categoria") },
+                    OutlinedTextField(value = selectedName, onValueChange = {}, readOnly = true, label = { Text("Categoria") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     )
                     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false })
                     {
-                        DropdownMenuItem(text = { Text("Sem categoria") },
-                            onClick = {
-                                selectedCategoryId = null
-                                expanded = false
-                            }
-                        )
                         categories.forEach { category ->
-                            DropdownMenuItem(text = { Text(category.name) },
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
                                 onClick = {
                                     selectedCategoryId = category.id
                                     expanded = false
@@ -118,15 +125,34 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
                     }
                 }
 
-                Button(enabled = amountCents != null && amountCents > 0 && note.isNotBlank() && selectedCategoryId  != null,
-                    onClick = {
-                        viewModel.addTransaction(note, amountCents!!, type, selectedCategoryId )
-                        note = ""
-                        amountText = ""
-                        selectedCategoryId  = null
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        enabled = canSave,
+                        onClick = {
+                            val current = editing
+                            if (current == null) {
+                                viewModel.addTransaction(note, amountCents!!, type, selectedCategoryId)
+                            } else {
+                                viewModel.updateTransaction(
+                                    current.copy(
+                                        note = note,
+                                        amountCents = amountCents!!,
+                                        type = type,
+                                        categoryId = selectedCategoryId
+                                    )
+                                )
+                            }
+                            resetForm()
+                        }
+                    ) {
+                        Text(if (editing == null) "Guardar" else "Atualizar")
                     }
-                ) {
-                    Text("Guardar")
+
+                    if (editing != null) {
+                        TextButton(onClick = { resetForm() }) {
+                            Text("Cancelar")
+                        }
+                    }
                 }
             }
         }
@@ -137,12 +163,28 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
             val sign = if (isExpense) "-" else "+"
             val categoryName = categories.find { it.id == transaction.categoryId }?.name ?: "Sem categoria"
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
-            {
-                Text(text = "${transaction.note} ($categoryName): $sign${formatCents(transaction.amountCents)}", color = color)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        editing = transaction
+                        note = transaction.note
+                        amountText = BigDecimal(transaction.amountCents).movePointLeft(2).toPlainString().replace('.', ',')
+                        type = transaction.type
+                        selectedCategoryId = transaction.categoryId
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${transaction.note} ($categoryName): $sign${formatCents(transaction.amountCents)}",
+                    color = color
+                )
 
-                IconButton(onClick = { viewModel.deleteTransaction(transaction) })
-                {
+                IconButton(onClick = {
+                    viewModel.deleteTransaction(transaction)
+                    if (editing?.id == transaction.id) resetForm()
+                }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Apagar")
                 }
             }
@@ -150,7 +192,6 @@ fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsVie
     }
 }
 
-private fun formatCents(cents: Long): String
-{
-    return NumberFormat.getCurrencyInstance(Locale("pt", "PT")).format(cents / 100.0)
+private fun formatCents(cents: Long): String {
+    return NumberFormat.getCurrencyInstance(Locale.forLanguageTag("pt-PT")).format(cents / 100.0)
 }

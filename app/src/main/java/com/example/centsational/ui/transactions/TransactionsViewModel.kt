@@ -40,17 +40,23 @@ class TransactionsViewModel @Inject constructor(private val repo: TransactionRep
                 else
                     it.amountCents
             }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = 0L
-        )
+    }
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = 0L
+    )
 
     fun addTransaction(note: String, amountCents: Long, type: TransactionType, categoryId: Long?)
     {
         viewModelScope.launch {
             repo.add(Transaction(note = note, amountCents = amountCents, type = type, categoryId = categoryId ,date = LocalDate.now()))
+        }
+    }
+
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repo.update(transaction)
         }
     }
 
