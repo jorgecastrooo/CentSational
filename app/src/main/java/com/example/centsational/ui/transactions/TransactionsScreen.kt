@@ -47,8 +47,8 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsViewModel = hiltViewModel())
-{
+fun TransactionsScreen(modifier: Modifier = Modifier, viewModel: TransactionsViewModel = hiltViewModel()
+) {
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val balanceCents by viewModel.balanceCents.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
