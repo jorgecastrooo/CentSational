@@ -1,5 +1,6 @@
 package com.example.centsational.ui.transactions
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,7 +31,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun TransactionsScreen(modifier: Modifier = Modifier, onAdd: () -> Unit, viewModel: TransactionsViewModel = hiltViewModel())
+fun TransactionsScreen(modifier: Modifier = Modifier, onAdd: () -> Unit, onEdit : (Long) -> Unit , viewModel: TransactionsViewModel = hiltViewModel())
 {
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val balanceCents by viewModel.balanceCents.collectAsStateWithLifecycle()
@@ -54,7 +55,11 @@ fun TransactionsScreen(modifier: Modifier = Modifier, onAdd: () -> Unit, viewMod
                 val sign = if (isExpense) "-" else "+"
                 val categoryName = categories.find { it.id == transaction.categoryId }?.name ?: "Sem categoria"
 
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+                Row(modifier = Modifier.fillMaxWidth()
+                    .clickable {
+                        onEdit(transaction.id)
+                    }
+                    .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
                 {
                     Text(text = "${transaction.note} ($categoryName): $sign${formatCents(transaction.amountCents)}", color = color)
 

@@ -10,4 +10,5 @@ interface TransactionRepository {
     suspend fun add(transaction: Transaction): Long
     suspend fun update(transaction: Transaction)
     suspend fun delete(transaction: Transaction)
+    suspend fun getById(id: Long): Transaction?
 }
