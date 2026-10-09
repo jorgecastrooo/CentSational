@@ -72,6 +72,8 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation("com.composables:icons-lucide-android:1.0.0")
+
     // Testes
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

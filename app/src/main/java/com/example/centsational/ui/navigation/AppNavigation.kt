@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.centsational.ui.categories.CategoriesScreen
 import com.example.centsational.ui.transactions.AddEditScreen
 import com.example.centsational.ui.transactions.TransactionsScreen
 
@@ -15,13 +16,16 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "transactions") {
+
         composable("transactions") {
             TransactionsScreen(
                 modifier = modifier,
                 onAdd = { navController.navigate("addedit") },
-                onEdit = { id -> navController.navigate("addedit?transactionId=$id") }
+                onEdit = { id -> navController.navigate("addedit?transactionId=$id") },
+                onNavigateToCategories = { navController.navigate("categories") }
             )
         }
+
         composable(
             route = "addedit?transactionId={transactionId}",
             arguments = listOf(
@@ -32,6 +36,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             )
         ) {
             AddEditScreen(modifier = modifier, onDone = { navController.popBackStack() })
+        }
+
+        composable("categories") {
+            CategoriesScreen(modifier = modifier, onBack = { navController.popBackStack() })
         }
     }
 }

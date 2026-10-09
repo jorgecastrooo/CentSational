@@ -9,7 +9,7 @@ import com.example.centsational.data.local.entity.TransactionEntity
 
 @Database(
     entities = [TransactionEntity::class, CategoryEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -8,5 +8,6 @@ data class CategoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val icon: String,
-    val colorHex: Long
+    val colorHex: Long,
+    val type: String
 )

@@ -33,4 +33,7 @@ class TransactionRepositoryImpl @Inject constructor(
         override suspend fun getById(id: Long): Transaction? =
             dao.getById(id)?.toDomain()
 
+        override suspend fun isCategoryInUse(categoryId: Long): Boolean =
+            dao.isCategoryInUse(categoryId)
+
     }

@@ -11,14 +11,16 @@ fun CategoryEntity.toDomain() = Category(
     id = id,
     name = name,
     icon = icon,
-    colorHex = colorHex
+    colorHex = colorHex,
+    type = TransactionType.valueOf(type)
 )
 
 fun Category.toEntity() = CategoryEntity(
     id = id,
     name = name,
     icon = icon,
-    colorHex = colorHex
+    colorHex = colorHex,
+    type = type.name
 )
 
 fun TransactionEntity.toDomain() = Transaction(

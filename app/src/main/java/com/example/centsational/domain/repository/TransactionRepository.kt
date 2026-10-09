@@ -11,4 +11,6 @@ interface TransactionRepository {
     suspend fun update(transaction: Transaction)
     suspend fun delete(transaction: Transaction)
     suspend fun getById(id: Long): Transaction?
+    suspend fun isCategoryInUse(categoryId: Long): Boolean
+
 }
